@@ -1,7 +1,7 @@
 {
   "name": "evercookie",
   "description": "Evercookie is a Javascript API that produces extremely persistent cookies in a browser.",
-  "main": ["js/evercookie.js","js/swfobject-2.2.min.js"],
+  "main": ["js/swfobject-2.2.min.js","js/evercookie.js"],
   "moduleType": "globals",
   "keywords": [
     "cookie",
