@@ -76,7 +76,7 @@ try{
   try{
     var localStore = window.localStorage
   }catch(ex){}
-  
+
   try {
     var sessionStorage = window.sessionStorage;
   } catch (e) { }
@@ -116,7 +116,7 @@ try{
     } else {
         return false
     }
-  } 
+  }
 
   // necessary for flash to communicate with js...
   // please implement a better way
@@ -145,8 +145,10 @@ try{
   }
 
   var defaultOptionMap = {
+    serverEnabled: false,
     history: true, // CSS history knocking or not .. can be network intensive
     java: true, // Java applet on/off... may prompt users for permission to run.
+    flash: false,
     tests: 10,  // 1000 what is it, actually?
     silverlight: true, // you might want to turn it off https://github.com/samyk/evercookie/issues/45
     domain: '.' + window.location.host.replace(/:\d+/, ''), // Get current domain
@@ -161,7 +163,7 @@ try{
     cacheCookieName: 'evercookie_cache',
     cachePath: '/evercookie_cache.php'
   };
-  
+
   var _baseKeyStr = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
   /**
    * @class Evercookie
@@ -227,20 +229,14 @@ try{
       if (i === 0) {
         self.evercookie_database_storage(name, value);
         self.evercookie_indexdb_storage(name, value);
-        self.evercookie_png(name, value);
-        self.evercookie_etag(name, value);
-        self.evercookie_cache(name, value);
-        self.evercookie_lso(name, value);
-        if (opts.silverlight) {
-          self.evercookie_silverlight(name, value);
-        }
-        if (opts.authPath) {
-          self.evercookie_auth(name, value);
-        }
-        if (_ec_java) {
-          self.evercookie_java(name, value);
-        }
-        
+        opts.serverEnabled && self.evercookie_png(name, value);
+        opts.serverEnabled && self.evercookie_etag(name, value);
+        opts.serverEnabled && self.evercookie_cache(name, value);
+        opts.flash && self.evercookie_lso(name, value);
+        opts.silverlight && self.evercookie_silverlight(name, value);
+        opts.authPath && self.evercookie_auth(name, value);
+        _ec_java && self.evercookie_java(name, value);
+
         self._ec.userData      = self.evercookie_userdata(name, value);
         self._ec.cookieData    = self.evercookie_cookie(name, value);
         self._ec.localData     = self.evercookie_local_storage(name, value);
@@ -248,9 +244,8 @@ try{
         self._ec.sessionData   = self.evercookie_session_storage(name, value);
         self._ec.windowData    = self.evercookie_window(name, value);
 
-        if (_ec_history) {
-          self._ec.historyData = self.evercookie_history(name, value);
-        }
+        _ec_history && (self._ec.historyData = self.evercookie_history(name, value));
+
       }
 
       // when writing data, we need to make sure lso and silverlight object is there
@@ -420,6 +415,7 @@ try{
         });
       }
     };
+
     this.evercookie_auth = function (name, value) {
       if (value !== undefined) {
         // {{opts.authPath}} handles Basic Access Authentication
@@ -462,7 +458,7 @@ try{
         });
       }
     };
-    
+
     this.evercookie_java = function (name, value) {
       var div = document.getElementById("ecAppletContainer");
 
@@ -470,7 +466,7 @@ try{
       if (typeof dtjava === "undefined") {
 	return;
       }
-      
+
       // Create the container div if none exists.
       if (div===null || div === undefined || !div.length) {
         div = document.createElement("div");
@@ -485,22 +481,22 @@ try{
 
       // If the Java applet is not yet defined, embed it.
       if (typeof ecApplet === "undefined") {
-        dtjava.embed({ 
+        dtjava.embed({
         	id: "ecApplet",
-        	url: _ec_baseurl + _ec_asseturi + "/evercookie.jnlp", 
-        	width: "1px", 
-        	height: "1px", 
+        	url: _ec_baseurl + _ec_asseturi + "/evercookie.jnlp",
+        	width: "1px",
+        	height: "1px",
         	placeholder: "ecAppletContainer"
           }, {},{ onJavascriptReady: doSetOrGet });
-        // When the applet is loaded we will continue in doSetOrGet() 
+        // When the applet is loaded we will continue in doSetOrGet()
       }
       else {
 	// applet already running... call doGetOrSet() directly.
 	doSetOrGet("ecApplet");
       }
-      
+
       function doSetOrGet(appletId) {
-	var applet = document.getElementById(appletId);	
+	var applet = document.getElementById(appletId);
         if (value !== undefined) {
           applet.set(name,value);
         }
@@ -508,7 +504,7 @@ try{
           self._ec.javaData = applet.get(name);
         }
       }
-      
+
       // The result of a get() is now in self._ec._javaData
     };
 
@@ -633,7 +629,7 @@ try{
         }
       } catch (e) { }
     };
- 
+
     this.evercookie_indexdb_storage = function(name, value) {
     try {
     if (!('indexedDB' in window)) {
@@ -767,7 +763,7 @@ try{
           $('body').append(html);
         }
       }catch(ex){
-      	
+
       }
     };
 
